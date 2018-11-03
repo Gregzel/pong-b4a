@@ -1,0 +1,465 @@
+﻿Version=6.5
+NumberOfModules=0
+Build1=Default,pingpong2.pingpong
+Build2=New_1,pingpong2.pingpong
+ManifestCode='This code will be applied to the manifest file during compilation.~\n~'You do not need to modify it in most cases.~\n~'See this link for for more information: http://www.basic4ppc.com/forum/showthread.php?p=78136~\n~AddManifestText(~\n~<uses-sdk android:minSdkVersion="4" android:targetSdkVersion="14"/>~\n~<supports-screens android:largeScreens="true" ~\n~    android:normalScreens="true" ~\n~    android:smallScreens="true" ~\n~    android:anyDensity="true"/>)~\n~SetApplicationAttribute(android:icon, "@drawable/icon")~\n~SetApplicationAttribute(android:label, "$LABEL$")~\n~'End of default text.~\n~
+IconFile=
+NumberOfFiles=2
+File1=PingPong2MainLayout.bal
+File2=pingpong2oynalayout.bal
+NumberOfLibraries=7
+Library1=audio
+Library2=core
+Library3=gameview
+Library4=gestures
+Library5=phone
+Library6=randomaccessfile
+Library7=serial
+@EndOfDesignText@
+#Region Module Attributes
+	#FullScreen: True
+	#IncludeTitle: False
+	#ApplicationLabel: Pong
+	#VersionCode: 1
+	#VersionName: 
+	#SupportedOrientations: landscape
+	#CanInstallToExternalStorage: False
+#End Region
+
+'Activity module
+Sub Process_Globals
+	Dim SeekBar1Val As Int	'top capı
+	Dim SeekBar2Val As Int	'raket uzunlugu
+	Dim SeekBar3Val As Int	'timer interval
+	Dim SeekBar4Val As Int	'top hızı
+	Dim smiley,raket1, raket2, backgroundbitmap  As BitmapData
+	Dim vx, vy, Player1skor, player2skor, Player1skoro, player2skoro As Int
+End Sub
+
+Sub Globals
+	Dim Temp1,Temp2, Temp3,Temp4 As Int
+	Dim LoadId1 As Int
+ 	Dim LoadId2 As Int
+ 	Dim LoadId3 As Int
+ 	Dim LoadId4 As Int
+	Dim LoadId5 As Int
+ 	Dim LoadId6 As Int
+	Dim MaxStream As Int
+	Dim SoundPool1 As SoundPool
+	Dim mediaplayer1 As MediaPlayer
+	Dim rate As Float
+	
+	Dim Gv As GameView
+	Dim Panel1 As Panel
+	Dim Canvas1 As Canvas
+	Dim Gestures1 As Gestures
+	Dim TouchMap As Map
+	Dim CikisButton As Button
+	Dim timer1,timerscore As Timer
+	Dim Exit , Clear As String
+	Dim ActivityBackgroundBmp As Bitmap
+	Type Point(Id As Int, prevX As Int, prevY As Int, Color As Int)
+	Dim RaketUzunlugu , RaketGenisligi , TopHiziX , Topcapi, TimerInterval As Int
+	Dim Raket1X1, Raket1X2, Raket1Y1, Raket1Y2, Raket2X1, Raket2X2, Raket2Y1, Raket2Y2 ,Xekseni, Yekseni, oyuncesidi As Int
+	Dim AyniMakina , BaslikButton , BlueTooth ,CpuIle , Reserve , CpuCpu ,Player1SkorLabel , Player2SkorLabel , Label1, Label2 As Label
+	
+	Dim rate1, rate2, rate3, rate4,soundvolume As Float
+	Dim repeat1, repeat2,repeat3,repeat4, musicvolume, sayialanplayer, animationcounter1, animationcounter2 As  Int
+
+	Dim CheckBox1 As CheckBox
+	Dim CheckBox2 As CheckBox
+	Dim phone1 As Phone
+	
+	Dim Mediaplayercaliyor, sesacik As Boolean
+
+End Sub
+
+Sub Activity_Create(FirstTime As Boolean)
+	Activity.LoadLayout("pingpong2mainlayout")
+	Xekseni = Activity.Height
+	Yekseni = Activity.Width
+	oyuncesidi = 3  ' CPUVSPLAYER 
+	oyuncesidi = 2  ' PLAYERVSPLAYER
+	oyuncesidi = 1  ' CPUVSCPU
+	oyuncesidi = 0  ' none
+	TimerInterval = 25
+	RaketUzunlugu = 100
+	RaketGenisligi = 50
+	Topcapi = 50dip 'The size (width and height) of the smiley rectangle
+	TopHiziX = 10dip
+	Player1skor = 0
+	player2skor = 0			
+	vx = 10dip
+	vy = 10dip	
+	MaxStream = 5
+	rate1 = 1.30
+	repeat1 = 1
+	sayialanplayer = 0
+	animationcounter1 = 0
+	animationcounter2 = 0
+	
+	Mediaplayercaliyor = True
+	sesacik = True
+		
+	SoundPool1.Initialize(MaxStream)
+	LoadId1 = SoundPool1.Load(File.DirAssets, "raket1ses.wav" )
+	LoadId2 = SoundPool1.Load(File.DirAssets, "beep1.wav" )
+	mediaplayer1.Initialize2("mediaplayer1")
+	mediaplayer1.Load(File.DirAssets, "popcorn.mid")
+
+	
+End Sub
+
+Sub Activity_Resume
+	If SeekBar1Val = 0 Then
+		SeekBar1Val	=	Topcapi    		'top capı
+		SeekBar2Val	=	RaketUzunlugu  	'raket uzunlugu
+		SeekBar3Val=	TimerInterval	' Timer interval
+		SeekBar4Val	=	TopHiziX 		' top hizi 
+	Else
+		Topcapi			= SeekBar1Val    		'top capı
+		RaketUzunlugu	= SeekBar2Val    	'raket uzunlugu
+		TimerInterval	= SeekBar3Val    ' raket genisligi
+		TopHiziX		= SeekBar4Val 			' top hizi 
+	End If
+		
+	Raket1X1	=	7%X
+	Raket1X2	=	Raket1X1+RaketGenisligi
+	Raket1Y1	=	5%Y
+	Raket1Y2	=	Raket1Y1+RaketUzunlugu		
+	Raket2X1	=	85%X
+	Raket2X2	=	Raket2X1+RaketGenisligi
+	Raket2Y1	=	85%Y
+	Raket2Y2	=	Raket2Y1+RaketUzunlugu
+	
+	raket1.DestRect.Initialize(Raket1X1,Raket1Y1,Raket1X2,Raket1Y2)
+	raket2.DestRect.Initialize(Raket2X1,Raket2Y1,Raket2X2,Raket2Y2)
+
+	backgroundbitmap.Bitmap = LoadBitmap(File.DirAssets, "tennis-court-hi.png")
+	smiley.Bitmap = LoadBitmap(File.DirAssets, "smiley.png")
+	raket2.Bitmap = LoadBitmap(File.DirAssets, "raket.png")
+	raket1.Bitmap = LoadBitmap(File.DirAssets, "raket.png")
+	smiley.DestRect.Initialize(100dip, 100dip, 100dip + Topcapi, 100dip + Topcapi)
+
+	Player1skor = Player1skoro
+	player2skor = player2skoro
+		
+	Activity.AddMenuItem("Settings", "Settings")
+	Activity.AddMenuItem("BlueToothBaglanti", "BlueToothBaglanti")
+	Activity.AddMenuItem("Exit","Exit")
+	
+	timer1.Initialize("Timer1", TimerInterval)
+	timer1.Enabled = False
+	
+	timerscore.Initialize("timerscore", TimerInterval)
+	timerscore.Enabled = False
+	
+	Gv.Initialize("gv")
+	Gv.BitmapsData.Add(smiley)
+	Gv.BitmapsData.Add(raket1)
+	Gv.BitmapsData.Add(raket2)
+	If Gv.IsHardwareAccelerated = False Then
+'		Msgbox("Hardware acceleration is not supported!!!", "")
+	End If	
+'	Temp2 = SoundPool1.Play(LoadId1,1,1,1,0,rate)
+
+	mediaplayer1.Play
+	mediaplayer1.Looping = True
+	mediaplayer1.SetVolume(0.3,0.3)
+	soundvolume = 1.000
+	musicvolume = phone1.GetVolume(phone1.VOLUME_MUSIC)
+	Activity.LoadLayout("pingpong2mainlayout")
+	
+	CheckBox1.Checked = Mediaplayercaliyor
+	CheckBox2.Checked = sesacik
+	
+End Sub
+
+Sub Activity_Pause (UserClosed As Boolean)
+		timer1.Enabled = False
+		mediaplayer1.Pause
+		phone1.SetVolume(phone1.VOLUME_MUSIC,musicvolume,False)
+End Sub
+
+Sub timerscore_Tick
+	If animationcounter1 = 0 Then
+		timerscore.Enabled = True
+	Else 
+	End If
+	animationcounter1 = animationcounter1 + 1
+	If (( animationcounter1 Mod 3) = 0) Then
+		If sayialanplayer = 1 Then
+	    	Player1SkorLabel.Color = Colors.RGB(Rnd(0,255),Rnd(0,255),Rnd(0,255))
+		Else
+			Player2SkorLabel.Color = Colors.RGB(Rnd(0,255),Rnd(0,255),Rnd(0,255))
+		End If
+	Else
+	End If
+	
+	If animationcounter1 = 40 Then
+		timerscore.Enabled = False
+		animationcounter1 = 0
+		Player1SkorLabel.Color = Colors.Blue
+		Player2SkorLabel.Color = Colors.Blue
+		If Player1skor > player2skor Then
+			Player1SkorLabel.Color = Colors.Red
+		Else
+			Player2SkorLabel.Color = Colors.Red
+		End If
+	Else
+	End If	
+End Sub
+Sub timer1_Tick
+	Select oyuncesidi
+		Case 1	' CPUVSCPU
+			MoveSmiley
+			'move cpu rakets
+			If smiley.DestRect.CenterX < 50%x Then
+				Raket1Y1	=	smiley.DestRect.CenterY - (RaketUzunlugu/2)
+				Raket1Y2	=	Raket1Y1+RaketUzunlugu
+				raket1.DestRect.Top = smiley.DestRect.CenterY - (RaketUzunlugu/2)
+				raket1.DestRect.Bottom = raket1.DestRect.Top+RaketUzunlugu
+			Else
+				Raket2Y1	=	smiley.DestRect.CenterY - (RaketUzunlugu/2)
+				Raket2Y2	=	Raket2Y1+RaketUzunlugu
+				raket2.DestRect.Top = smiley.DestRect.CenterY - (RaketUzunlugu/2)
+				raket2.DestRect.Bottom = raket2.DestRect.Top+RaketUzunlugu
+			End If
+		Case 2	' PLAYERVSPLAYER
+			MoveSmiley
+		Case 3	' CPUVSPLAYER
+			MoveSmiley
+			'move cpu raket
+			Raket2Y1	=	smiley.DestRect.CenterY - (RaketUzunlugu/2)
+			Raket2Y2	=	Raket2Y1+RaketUzunlugu
+			raket2.DestRect.Top = smiley.DestRect.CenterY - (RaketUzunlugu/2)
+			raket2.DestRect.Bottom = raket2.DestRect.Top+RaketUzunlugu
+		Case 4
+		Case Else
+	End Select		
+End Sub
+
+Sub CpuIle_Click
+	oyuncesidi = 3  ' CPUVSPLAYER 
+	INITPLAYGROUND
+End Sub
+
+Sub AyniMakina_Click
+	oyuncesidi = 2  ' PLAYERVSPLAYER
+	INITPLAYGROUND
+End Sub
+
+Sub CpuCpu_Click
+	oyuncesidi = 1  ' cpuvscpu
+	INITPLAYGROUND
+End Sub
+
+Sub INITPLAYGROUND
+	Player1skor = 0
+	player2skor = 0
+	Activity.RemoveAllViews
+	Activity.LoadLayout("Pingpong2OynaLayout")
+	Activity.AddView(Gv, 0, 0, 100%x, 100%y)
+	Panel1.SetBackgroundImage(backgroundbitmap.Bitmap)
+	Canvas1.Initialize(Panel1)
+	TouchMap.Initialize
+	timer1.Enabled = True
+	Gestures1.SetOnTouchListener(Panel1, "GesturesTouch1")
+End Sub
+
+Sub MoveSmiley
+' saga veya sola degdi ise skor hesapla 
+	If smiley.DestRect.Right > 99%x Then
+		TopHiziX = -1 * Abs(TopHiziX)
+		Player1skor = Player1skor + 1
+		Player1skoro = Player1skor
+		Player1SkorLabel.Text = Player1skor
+		Temp1 = SoundPool1.Play(LoadId1,1,soundvolume,soundvolume,repeat1,rate1)
+		sayialanplayer = 1
+		timerscore_Tick
+	Else If smiley.DestRect.Left < 1%x Then
+		TopHiziX = Abs(TopHiziX)
+		player2skor = player2skor + 1
+		player2skoro = player2skor
+		Player2SkorLabel.Text = player2skor
+		Temp1 = SoundPool1.Play(LoadId1,1,soundvolume,soundvolume,repeat1,rate1)
+		sayialanplayer = 2
+		timerscore_Tick
+	End If
+'rakete degdi ise yeni yon ve aci belirler
+	If (smiley.DestRect.CenterX > Raket2X1) And (smiley.DestRect.CenterX < Raket2X2) And (smiley.DestRect.CenterY < Raket2Y2) And  (smiley.DestRect.CenterY > Raket2Y1) Then
+		Temp1 = SoundPool1.Play(LoadId1,1,soundvolume,soundvolume,0,1)
+		TopHiziX = (-1 * Abs(TopHiziX)) 
+		If vy < 0 Then
+			vy = vy + Rnd(0,15)
+		Else
+			vy = vy - Rnd(0,15)
+		End If		
+	Else If (smiley.DestRect.CenterX > Raket1X1) And (smiley.DestRect.CenterX < Raket1X2) And (smiley.DestRect.CenterY < Raket1Y2) And  (smiley.DestRect.CenterY > Raket1Y1) Then
+		Temp1 = SoundPool1.Play(LoadId1,1,soundvolume,soundvolume,0,1)
+		TopHiziX = (Abs(TopHiziX)) 
+		If vy < 0 Then
+			vy = vy + Rnd(0,15)
+		Else
+			vy = vy - Rnd(0,15)
+		End If		
+	End If
+' asagıdan ve yukarıdan zıplat
+	If smiley.DestRect.Bottom > 99%y Then
+		vy = -1 * Abs(vy)
+		Temp1 = SoundPool1.Play(LoadId1,1,soundvolume,soundvolume,repeat1,rate1)
+	Else If smiley.DestRect.Top < 1%y Then
+		vy = Abs(vy)
+		Temp1 = SoundPool1.Play(LoadId1,1,soundvolume,soundvolume,repeat1,rate1)
+	End If
+
+'move the smiley
+	smiley.DestRect.Left = smiley.DestRect.Left + TopHiziX
+	smiley.DestRect.Top = smiley.DestRect.Top + vy
+	smiley.DestRect.Right = smiley.DestRect.Left + Topcapi
+	smiley.DestRect.Bottom = smiley.DestRect.Top + Topcapi
+	Gv.Invalidate 'Mark the whole GameView as "dirty"
+End Sub
+
+Sub GesturesTouch1(View As Object, PointerID As Int, Action As Int, X As Float, Y As Float) As Boolean
+	Dim p As Point
+	Select Action
+		Case Gestures1.ACTION_DOWN, Gestures1.ACTION_POINTER_DOWN
+			'New Point is assigned to the new touch
+			p.Id = PointerID
+			TouchMap.Put(PointerID, p)
+		Case Gestures1.ACTION_POINTER_UP
+			TouchMap.Remove(PointerID)
+		Case Gestures1.ACTION_UP
+			'This is the end of this gesture
+			TouchMap.Clear
+	End Select
+	Dim px, py As Int
+	Log(TouchMap.Size)
+	For İ = 0 To TouchMap.size - 1
+		p = TouchMap.GetValueAt(İ)
+		px = Gestures1.GetX(p.id)
+		py = Gestures1.GetY(p.id)
+		p.prevX = px
+		p.prevY = py
+	Select oyuncesidi
+		Case 1	' cpuvscpu
+		Case 2	' PLAYERVSPLAYER
+				If px < (Xekseni/100)*50 Then
+					Raket1Y1				=	py - (RaketUzunlugu/2)
+					Raket1Y2				=	Raket1Y1+RaketUzunlugu
+					raket1.DestRect.Top 	=	Raket1Y1
+					raket1.DestRect.Bottom 	=	Raket1Y2
+				Else
+					Raket2Y1				=	py - (RaketUzunlugu/2)
+					Raket2Y2				=	Raket2Y1+RaketUzunlugu
+					raket2.DestRect.Top 	=	Raket2Y1
+					raket2.DestRect.Bottom	=	Raket2Y2
+				End If
+		Case 3	' CPUVSPLAYER
+				If px < 50%X Then
+					Raket1Y1				=	py - (RaketUzunlugu/2)
+					Raket1Y2				=	Raket1Y1+RaketUzunlugu
+					raket1.DestRect.Top 	=	Raket1Y1
+					raket1.DestRect.Bottom	=	Raket1Y2
+				Else
+				End If
+		Case Else
+	End Select
+	Next
+	Return True
+End Sub
+
+
+Sub Label2_Click
+	Activity.LoadLayout("pingpong2mainlayout")
+	timer1.Enabled = False	
+	If soundvolume  = 1 Then
+		CheckBox2.Checked = True
+	Else
+		CheckBox2.Checked = False
+	End If
+	
+	If mediaplayer1.IsPlaying Then
+		CheckBox1.Checked = True
+	Else
+		CheckBox1.Checked = False
+	End If
+'	Activity_Create(False)
+'	Activity_Resume
+End Sub
+
+Sub Settings_Click
+	SeekBar1Val  =	Topcapi  		'	top capı
+	SeekBar2Val =	RaketUzunlugu   '	raket uzunlugu
+	SeekBar3Val =	TimerInterval ' 	timer interval
+	SeekBar4Val =	Abs(TopHiziX)		' 	top hizi 
+'	StartActivity(Settings)
+End Sub
+
+Sub Activity_KeyPress(KeyCode As Int) As Boolean 
+	If KeyCode = KeyCodes.KEYCODE_BACK Then	' Checks if the KeyCode is BackKey
+		Activity.LoadLayout("pingpong2mainlayout")
+		timer1.Enabled = False	
+		If soundvolume  = 1 Then
+			CheckBox2.Checked = True
+		Else
+			CheckBox2.Checked = False
+		End If
+		
+		If mediaplayer1.IsPlaying Then
+			CheckBox1.Checked = True
+		Else
+			CheckBox1.Checked = False
+		End If
+		Return True
+'		Return False	' Return = False  the Event will not be consumed
+	Else						'									we leave the program
+		Return True		' Return = True  	the Event will be consumed to avoid 
+	End If					' 								leaving the program
+End Sub
+
+Sub Activity_Touch (Action As Int, X As Float, Y As Float)
+	
+End Sub
+
+Sub Exit_Click
+	Activity.Finish
+End Sub
+
+
+Sub CikisButton_Click
+	Activity.Finish
+End Sub
+
+Sub BlueTooth_Click
+	Activity.OpenMenu
+End Sub
+
+
+Sub CheckBox1_CheckedChange(Checked As Boolean)
+	If Checked Then
+		mediaplayer1.Play
+		Mediaplayercaliyor = True
+	Else
+		mediaplayer1.Pause
+		Mediaplayercaliyor = False
+	End If	
+End Sub
+
+Sub CheckBox2_CheckedChange(Checked As Boolean)
+	If Checked Then
+		soundvolume = 1.000
+		SoundPool1.SetVolume(LoadId1,1,1)
+		phone1.SetVolume(phone1.VOLUME_MUSIC,musicvolume,False)
+		sesacik = True
+	Else
+		soundvolume = 0.000
+		SoundPool1.SetVolume(LoadId1,0,0)
+		phone1.SetVolume(phone1.VOLUME_MUSIC,0,False)
+		sesacik = False
+	End If
+End Sub
+
+Sub ScoreAnimation
+End Sub
